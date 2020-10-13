@@ -86,35 +86,24 @@ class CryptoHelper
     }
 
     /**
-     * @param string|MimePart $data
-     * @param array|null      $caInfo    Information about the trusted CA certificates to use in the verification process
-     * @param array           $rootCerts
-     *
+     * @param  string|MimePart  $data
+     * @param  array|null  $caInfo  Information about the trusted CA certificates to use in the verification process
+
      * @return bool
      */
-    public static function verify($data, $caInfo = null, $rootCerts = null)
+    public static function verify($data, $caInfo = [])
     {
         if ($data instanceof MimePart) {
             $data = self::getTempFilename((string) $data);
         }
-
-        if (!empty($caInfo)) {
-            foreach ((array) $caInfo as $cert) {
-                $rootCerts[] = self::getTempFilename($cert);
-            }
-        }
-
-        $flags = PKCS7_BINARY | PKCS7_NOSIGS;
-
-        // if (empty($rootCerts)) {
-        $flags |= PKCS7_NOVERIFY;
+        // TODO: refactory
+        // if (! is_array($caInfo)) {
+        //     $caInfo = [
+        //         self::getTempFilename($caInfo),
+        //     ];
         // }
-
-        $outFile = stripos(PHP_OS, 'WIN') === 0 ?
-            self::getTempFilename() :
-            '/dev/null';
-
-        return openssl_pkcs7_verify($data, $flags, $outFile, $rootCerts) === true;
+        // return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY, null, $caInfo);
+        return openssl_pkcs7_verify($data, PKCS7_BINARY | PKCS7_NOSIGS | PKCS7_NOVERIFY);
     }
 
     /**
